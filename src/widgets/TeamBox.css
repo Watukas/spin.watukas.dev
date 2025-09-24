@@ -1,0 +1,21 @@
+.team-container {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    display: flex;
+    flex-direction: column;
+    filter: drop-shadow(8px 8px 10px black);
+}
+
+.team-title {
+    background: red;
+    padding: 16px;
+}
+
+.team-members {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.team-member {
+    font-weight: 800;
+}
