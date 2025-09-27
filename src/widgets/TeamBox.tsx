@@ -6,9 +6,10 @@ interface Props {
     max: number;
     members: string[];
     unfocused: boolean;
+    onNameClick?: (name: string) => void
 }
 
-export default function TeamBox({color, name, max = 5, members, unfocused} : Props) {
+export default function TeamBox({color, name, max = 5, members, unfocused, onNameClick} : Props) {
 
     return <div className="team-container" style={{outlineColor: color, opacity:unfocused ? 0.5 : 1}}>
 
@@ -17,8 +18,11 @@ export default function TeamBox({color, name, max = 5, members, unfocused} : Pro
         <div className="team-members">
             {[...Array(Math.max(members.length, max)).keys()].map(i => {
                 const name = members[i] ?? "???";
-                return <div key={i} className="team-member" style={{opacity:members[i] == null ? 0.5 : 1}}>
-                    <span>{name}</span>
+                const empty = members[i] == null;
+                return <div key={i} className="team-member" style={{opacity:empty ? 0.5 : 1}}
+                    onClick={_ => onNameClick!(name)}
+                >
+                    <span style={{cursor:empty ? undefined : "pointer"}}>{name}</span>
                 </div>
             })}
         </div>

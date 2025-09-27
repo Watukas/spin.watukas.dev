@@ -3,10 +3,12 @@
     display: flex;
     flex-direction: column;
     filter: drop-shadow(8px 8px 10px black);
+    transition-duration: 500ms;
+    transition-delay: 1000ms;
 }
 
 .team-title {
-    background: red;
+    outline: 4px solid black;
     padding: 16px;
 }
 

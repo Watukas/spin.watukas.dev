@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import TeamBox from "./widgets/TeamBox";
 import SpinnableWheel from "./widgets/Wheel";
+import { fastRoll, separateRoll } from "./util/RollOption";
 
 function App() {
-	const people = [
+
+	const [input, setInput] = useState([
 		"Watukas",
 		"Ikiliikkuja",
 		"Oire",
@@ -15,21 +17,30 @@ function App() {
 		"Arde",
 		"Cauze",
 		"Aksuw"
-	].sort();
+	].join("\n"));
+
+	const [editing, setEditing] = useState(false);
+
+	const people = input.split("\n").map(s => s.trim()).filter(s => s.length > 0).sort();
 
 	const [members, setMembers] = useState([[], []] as string[][]);
-
-	const addMember = (team: number, member: string) => setMembers(m => {
-		const copy = [...m];
-		copy[team] = [...copy[team], member];
-		return copy;
-	})
+	const removeMember = (name: string) => {
+		let copy = [...members]
+		setMembers(copy.map(a => a.filter(n => n != name)))
+	}
 
 	const firstMax = Math.ceil(people.length / 2);
-	const target = members.flat().length < firstMax ? 0 : 1;
-
+	
 	const ref = useRef<HTMLDivElement>(null);
 	const scale = useScale(ref.current!);
+
+	const segments = people.filter(p => !members.flat().includes(p));
+	
+	const rollOption = separateRoll();
+	const target =
+		  segments.length == 0 ? -1
+		: segments.length == 2 ? -2
+		: rollOption.target(members);
 
 	return (
 		<div ref={ref} style={{
@@ -41,21 +52,52 @@ function App() {
 			<TeamBox
 				key="T"
 				color="#eca100ff"
-				name="T-Team"
+				name="Team 1"
 				max={firstMax}
 				members={members[0]}
+				onNameClick={removeMember}
 				unfocused={target == 1}
 			/>
-			<SpinnableWheel
-				segments={people.filter((p) => !members.flat().includes(p))}
-				onFinish={(result) => addMember(target, result.label)}
+
+			{
+			editing ?
+				<textarea spellCheck={false} className="name-list" autoFocus value={input} onChange={e => setInput(e.target.value)}
+					onBlur={_ => setEditing(false)}
+				/>
+			: segments.length == 0 ?
+				<div style={{cursor:"pointer", fontSize: 48, alignSelf:"center"}}
+					onClick={() => setMembers([[], []])}
+				>
+					👌
+				</div>
+			: <SpinnableWheel
+				splitTarget={target == -2}
+				segments={segments}
+				onRightClick={() => setEditing(!editing)}
+				onFinish={(result) => {
+					const copy = [...members]
+					if (rollOption.add)
+						rollOption.add(result.label, people.length, copy);
+					else {
+						if (target == -2) {
+							copy[1].push(result.label);
+							copy[0].push(segments.find(s => s != result.label)!);
+						} else  {
+							copy[target].push(result.label);
+						}
+					}
+					setMembers(copy);
+				}}
 			/>
+			}
+
 			<TeamBox
 				key="CT"
 				color="#173682"
-				name="CT-Team"
+				name="Team 2"
 				max={people.length - firstMax}
 				members={members[1]}
+				onNameClick={removeMember}
 				unfocused={target == 0}
 			/>
 		</div>

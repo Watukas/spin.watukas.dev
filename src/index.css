@@ -6,7 +6,7 @@
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background: #380000;
-  background: radial-gradient(circle at center bottom, rgba(56, 0, 0, 1) -10%, rgba(0, 0, 0, 1) 100%);
+  background: radial-gradient(circle at center bottom, rgba(0, 32, 56, 1) -10%, rgba(0, 0, 0, 1) 100%);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

@@ -8,7 +8,9 @@ export interface SpinResult {
 
 interface SpinnableWheelProps {
 	segments: string[];
+	splitTarget?: boolean,
 	onFinish: (result: SpinResult) => void;
+	onRightClick?: () => void;
 	size?: number;
 }
 
@@ -16,29 +18,37 @@ const looks = [
 	"#d23b52ff",
 	"#f59e0b",
 	"#f97316",
-	"#9fe976ff",
+	"#81cd59ff",
 	"#a78bfa",
-	"#fb7185"
+	"#dd52c8ff",
+	"#fb7185",
+	
 ];
 
 const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 	segments,
 	onFinish,
+	onRightClick,
+	splitTarget = false,
 	size = 250,
 }) => {
 	const wheelRef = useRef<HTMLDivElement | null>(null);
 	const [rotation, setRotation] = useState(0);
 	const [spinning, setSpinning] = useState(false);
+	const [hovered, setHovered] = useState<number | null>(null);
 
-	const DURATION = 4000;
+	const DURATION = 1000;
 
 	useEffect(() => {
 		const node = wheelRef.current;
 		if (!node) return;
 
 		function onTransitionEnd(e: TransitionEvent) {
-			if (e.propertyName !== "transform") return;
-			const normalized = ((rotation % 360) + 360) % 360;
+			if (e.propertyName !== "transform")
+				return;
+			if (e.target != node)
+				return;
+			const normalized = ((rotation % 360) + 360 + 270) % 360;
 			const pointerAngle = (360 - normalized) % 360;
 			const segmentAngle = 360 / segments.length;
 			const index = Math.floor(pointerAngle / segmentAngle) % segments.length;
@@ -60,17 +70,31 @@ const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 	}
 
 	const segmentAngle = 360 / segments.length;
+
+	const look = (i: number) => {
+		if (i % looks.length == 0 && i == segments.length - 1)
+			return looks[1];
+		return looks[i % looks.length]
+	}
 	const gradient = segments
 		.map(
 			(_, i) =>
-				`${looks[i % looks.length]} ${i * segmentAngle}deg ${
+				`${look(i)} ${i * segmentAngle}deg ${
 					(i + 1) * segmentAngle
 				}deg`
 		)
 		.join(", ");
 
 	return (
-		<div className="wheel-wrapper">
+		<div className="wheel-wrapper"
+			onContextMenu={e => {
+				e.preventDefault();
+				onRightClick?.();
+			}}
+		>
+			
+			{!splitTarget || <div className="pointer wleft">◀</div>}
+			
 			<div className="wheel-container" style={{width: size}}>
 
 				<div
@@ -87,25 +111,31 @@ const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 						background: `conic-gradient(${gradient})`,
 					}}
 				>
-					{segments.map((label, i) => (
-						<div
+					{segments.map((label, i) => {
+						const r = i * segmentAngle + segmentAngle / 2;
+						let transformation = `
+							translate(-50%, -50%)
+							rotate(${r}deg)
+							rotate(-90deg)
+							translate(${size * (segments.length == 2 ? 0.22 : 0.32)}px)
+						`
+						if (segments.length == 2 || (hovered == i && !spinning))
+							transformation += `rotate(${- r - (rotation % 360) + 90}deg)`
+						return <div
 							key={i}
 							className="segment-label"
 							style={{
-								transform: `translate(-50%, -50%) rotate(${
-									i * segmentAngle + segmentAngle / 2
-								}deg) rotate(-90deg) translate(${size * 0.32}px)`,
+								transform: transformation, padding: 4
 							}}
+            				onMouseLeave={() => setHovered(null)}
 						>
-							<span>
-								{label}
-							</span>
+							<span onMouseEnter={() => setHovered(i)}>{label}</span>
 						</div>
-					))}
+					})}
 				</div>
 			</div>
 
-			<div className="pointer">◀</div>
+			<div className="pointer wright">{splitTarget ? "▶" : "◀"}</div>
 
 		</div>
 	);
