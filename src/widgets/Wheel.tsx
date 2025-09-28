@@ -10,6 +10,7 @@ interface SpinnableWheelProps {
 	segments: string[];
 	splitTarget?: boolean,
 	onFinish: (result: SpinResult) => void;
+	onMiddleClick?: () => void;
 	onRightClick?: () => void;
 	size?: number;
 }
@@ -21,14 +22,13 @@ const looks = [
 	"#81cd59ff",
 	"#a78bfa",
 	"#dd52c8ff",
-	"#fb7185",
-	
+	"#fb7185"
 ];
 
 const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 	segments,
 	onFinish,
-	onRightClick,
+	onMiddleClick, onRightClick,
 	splitTarget = false,
 	size = 250,
 }) => {
@@ -37,7 +37,7 @@ const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 	const [spinning, setSpinning] = useState(false);
 	const [hovered, setHovered] = useState<number | null>(null);
 
-	const DURATION = 1000;
+	const DURATION = Math.max(1000, 5000 - segments.length * 250);
 
 	useEffect(() => {
 		const node = wheelRef.current;
@@ -61,10 +61,17 @@ const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 		return () => node.removeEventListener("transitionend", onTransitionEnd);
 	}, [rotation, segments, onFinish]);
 
-	function spin() {
-		if (spinning) return;
+	function spin(e: React.MouseEvent) {
+		e.preventDefault();
+		if (e.button == 1) {
+			onMiddleClick?.();
+			return;
+		}
+
+		if (spinning || e.button != 0)
+			return;
 		setSpinning(true);
-		const extraTurns = Math.floor(Math.random() * 3) + 4;
+		const extraTurns = Math.floor(Math.random() * 3) + 2;
 		const offset = Math.random() * 360;
 		setRotation((r) => r + extraTurns * 360 + offset);
 	}
@@ -92,14 +99,14 @@ const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 				onRightClick?.();
 			}}
 		>
-			
+
 			{!splitTarget || <div className="pointer wleft">◀</div>}
-			
+
 			<div className="wheel-container" style={{width: size}}>
 
 				<div
 					ref={wheelRef}
-					onClick={spin}
+					onMouseDown={spin}
 					className="wheel"
 					style={{
 						width: size,
@@ -122,7 +129,7 @@ const SpinnableWheel: React.FC<SpinnableWheelProps> = ({
 						if (segments.length == 2 || (hovered == i && !spinning))
 							transformation += `rotate(${- r - (rotation % 360) + 90}deg)`
 						return <div
-							key={i}
+							key={label}
 							className="segment-label"
 							style={{
 								transform: transformation, padding: 4

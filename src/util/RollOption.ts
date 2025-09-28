@@ -8,7 +8,7 @@ interface RollOption {
 export function fastRoll() : RollOption {
     return {
         label: "Fast",
-        add: (rolled, max, teams) => {
+        add: (rolled, _, teams) => {
             const firstMax = Math.ceil((teams[0].length + teams[1].length + 1) / 2);
             const target = teams.flat().length < firstMax ? 0 : 1;
             teams[target].push(rolled);
@@ -24,7 +24,11 @@ export function separateRoll() : RollOption {
     return {
         label: "Separate",
         target: (teams) => {
-            return teams.flat().length % teams.length;
+            const min = teams.reduce(
+                (minIdx, arr, i, all) => arr.length < all[minIdx].length ? i : minIdx, 0
+			);
+            return min;
+            //return teams.flat().length % teams.length;
         }
     }
 }
