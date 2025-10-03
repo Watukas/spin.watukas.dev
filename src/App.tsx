@@ -3,7 +3,19 @@ import "./App.css";
 import TeamBox from "./widgets/TeamBox";
 import SpinnableWheel from "./widgets/Wheel";
 import { separateRoll } from "./util/RollOption";
-import SpinnableMapWheel, { allMaps, type MapInfo } from "./widgets/MapWheel";
+import SpinnableMapWheel, { type MapInfo } from "./widgets/MapWheel";
+
+const allMaps: MapInfo[] = [
+	{ label: "Anubis", image: "/maps/de_anubis.png" },
+	{ label: "Nuke", image: "/maps/de_nuke.png" },
+	{ label: "Inferno", image: "/maps/de_inferno.png" },
+	{ label: "Mirage", image: "/maps/de_mirage.png" },
+	{ label: "Overpass", image: "/maps/de_overpass.png" },
+	{ label: "Vertigo", image: "/maps/de_vertigo.png" },
+	{ label: "Ancient", image: "/maps/de_ancient.png" },
+	{ label: "Dust II", image: "/maps/de_dust2.png" },
+	//{ label: "Train", image: "/maps/de_train.png" }
+]
 
 function App() {
 
@@ -57,7 +69,7 @@ function App() {
 
 			<div style={{display:"flex", gap:8, marginTop:16, transition:"all 0.5s ease-in-out"}}>
 				{bannedMaps.map(m =>
-					<div key={m.label} onClick={() => setBannedMaps(bannedMaps.filter(x => x != m))}>
+					<div key={m.label} title={m.label} onClick={() => setBannedMaps(bannedMaps.filter(x => x != m))}>
 						<div style={{ position: "relative", display: "inline-block", height: 48 }}>
 							<img src={m.image} style={{ height: 48 }}/>
 							<div
@@ -98,7 +110,7 @@ function App() {
 			{
 			editing ?
 				<div style={{display:"flex", flexDirection:"column", gap:8}}>
-					<textarea spellCheck={false} className="name-list" autoFocus value={input} onChange={e => setInput(e.target.value)}
+					<textarea style={{fontSize:Math.min(17, 210 / input.split("\n").length)}} spellCheck={false} className="name-list" autoFocus value={input} onChange={e => setInput(e.target.value)}
 						onBlur={_ => setEditing(false)}
 					/>
 					<span style={{fontFamily:"monospace"}}>{firstMax} v {people.length - firstMax}</span>

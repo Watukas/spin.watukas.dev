@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Wheel.css";
+import { playTickSound } from "../util/sounds";
+import { getRotation } from "../util/wheels";
 
 interface SpinnableMapWheelProps {
 	onFinish: (result: MapInfo) => void;
@@ -13,17 +15,6 @@ export interface MapInfo {
 	label: string;
 	image: string;
 }
-
-export const allMaps: MapInfo[] = [
-	{ label: "Nuke", image: "/maps/de_nuke.png" },
-	{ label: "Inferno", image: "/maps/de_inferno.png" },
-	{ label: "Mirage", image: "/maps/de_mirage.png" },
-	{ label: "Overpass", image: "/maps/de_overpass.png" },
-	{ label: "Vertigo", image: "/maps/de_vertigo.png" },
-	{ label: "Ancient", image: "/maps/de_ancient.png" },
-	{ label: "Dust II", image: "/maps/de_dust2.png" },
-	{ label: "Train", image: "/maps/de_train.png" }
-]
 
 const SpinnableMapWheel: React.FC<SpinnableMapWheelProps> = ({
 	onFinish,
@@ -63,6 +54,49 @@ const SpinnableMapWheel: React.FC<SpinnableMapWheelProps> = ({
 		node.addEventListener("transitionend", onTransitionEnd);
 		return () => node.removeEventListener("transitionend", onTransitionEnd);
 	}, [rotation, segments, onFinish]);
+
+	const [_, setCurrentTickIndex] = useState<number>(-1);
+
+	useEffect(() => {
+		if (!spinning) return;
+
+		let animationFrame: number;
+		let start: number | null = null;
+		let lastTickTime = 0;
+		const initialRotation = rotation;
+		const duration = DURATION;
+		const anglePerSegment = 360 / segments.length;
+
+		function animate(now: number) {
+			if (start === null) start = now;
+			const elapsed = now - start;
+			const t = Math.min(elapsed / duration, 1);
+
+			const currentRotation = getRotation(wheelRef.current!) || initialRotation;
+
+			const normalized = ((currentRotation % 360) + 360) % 360;
+			const pointerAngle = (360 - normalized) % 360;
+			const index = Math.floor((pointerAngle + anglePerSegment / 2) / anglePerSegment) % segments.length;
+
+			setCurrentTickIndex(currentIndex => {
+				if (index != currentIndex && now - lastTickTime > 30) {
+					lastTickTime = now;
+					const pitch = 0.8 + 0.4 * t;
+					playTickSound(undefined, pitch);
+				}
+				return index;
+			});
+
+			if (t < 1) {
+				animationFrame = requestAnimationFrame(animate);
+			}
+		}
+
+		animationFrame = requestAnimationFrame(animate);
+
+		return () => cancelAnimationFrame(animationFrame);
+		// eslint-disable-next-line
+	}, [spinning, rotation, segments.length]);
 
 	function spin(e: React.MouseEvent) {
 		e.preventDefault();
