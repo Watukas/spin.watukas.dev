@@ -14,7 +14,10 @@ const allMaps: MapInfo[] = [
 	{ label: "Vertigo", image: "/maps/de_vertigo.png" },
 	{ label: "Ancient", image: "/maps/de_ancient.png" },
 	{ label: "Dust II", image: "/maps/de_dust2.png" },
-	//{ label: "Train", image: "/maps/de_train.png" }
+	//{ label: "Train", image: "/maps/de_train.png" },
+	//{ label: "Italy", image: "/maps/cs_italy.png" },
+	{ label: "Office", image: "/maps/cs_office.png" },
+	//{ label: "Agency", image: "/maps/cs_agency.png" }
 ]
 
 function App() {
@@ -117,6 +120,7 @@ function App() {
 				</div>
 			: segments.length == 0 ?
 				<div style={{cursor:"pointer", fontSize: 48, alignSelf:"center"}}
+					onMouseDown={e => e.button == 1 && setMapView(true)}
 					onClick={() => setMembers([[], []])}
 				>
 					👌

@@ -108,7 +108,7 @@ const SpinnableMapWheel: React.FC<SpinnableMapWheelProps> = ({
 			return;
 		setSpinning(true);
 		const extraTurns = Math.floor(Math.random() * 3) + 4;
-		const offset = Math.random() * 360;
+		const offset = Math.random() * 360.0;
 		setRotation((r) => r + extraTurns * 360 + offset);
 	}
 
